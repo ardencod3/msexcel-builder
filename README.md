@@ -1,4 +1,4 @@
-# msexcel-builder
+    # msexcel-builder
 
 A simple and fast library to create MS Office Excel(>2007) xlsx files(Compatible with the OpenOffice document format). 
 
@@ -87,7 +87,9 @@ Create a new worksheet with specified columns and rows
 
 Returns a `Sheet` object
 
-Notes: The sheet name must be unique within a same workbook.
+Notes: The sheet name must be unique within a same workbook.  No error checking or collision-resolution mechanisms are currently applied.
+
+Also the sheet name is cleaned, replacing disallowed characters `[]\/*:?` with a dash `-`
 
 Example: Create a new sheet named 'sheet1' with 5 columns and 8 rows
 
@@ -113,13 +115,13 @@ workbook.save(function(err){
 
 Cancel to make current workbook,drop all data.
 
-### Sheet.set(col, row, str)
+### Sheet.set(col, row, val)
 
 Set the cell data.
 
 * `col` - (Number) Cell column index(start with 1).
 * `row` - (Number) Cell row index(start with 1).
-* `str` - (String) Cell data.
+* `val` - (String) Cell data.  May be a string or number.
 
 No returns.
 
@@ -178,12 +180,13 @@ The options may contain:
   * `scheme` - (String) font scheme
   * `bold` - (String) if bold: 'true'/'false'
   * `iter` - (String) if italic: 'true'/'false'
+  * `color` - (String) font color as HEX RGB or ARGB value (e.g. `"2266AA"` or `"FF2266AA`"`)
 
 * `fill_style` - (Object) fill style options
 The options may contain:
 
   * `type` - (String) fill type: such as 'solid'
-  * `fgColor` - (String) front color
+  * `fgColor` - (String) front color, as HEX RGB or ARGB value (e.g. `"2266AA"` or `"FF2266AA`"`)
   * `bgColor` - (String) background color
 
 * `border_style` - (Object) border style options
@@ -197,8 +200,8 @@ The options may contain:
 Example:
 
 ```javascript
-sheet1.font(2, 1, {name:'黑体',sz:'24',family:'3',scheme:'-',bold:'true',iter:'true'});
-sheet1.fill(3, 3, {type:'solid',fgColor:'8',bgColor:'64'});
+sheet1.font(2, 1, {name:'黑体',sz:'24',family:'3',scheme:'-',bold:'true',iter:'true', color: 'FFAA00'});
+sheet1.fill(3, 3, {type:'solid',fgColor:'2266aa',bgColor:'64'});
 sheet1.border(1, 1, {left:'medium',top:'medium',right:'thin',bottom:'medium'});
 ```
 
@@ -217,17 +220,32 @@ Example: Merge the first row as title from (1,1) to (5,1)
 ```javascript
 sheet1.merge({col:1,row:1},{col:5,row:1});
 ```
+## Sheet.autoFilter(filter_spec)
+The argument may be a range (e.g. `"$A1:$J12"`) or `true` in which case the entire sheet domain is used as the range.
+
 
 ## Testing
 
-In node.js
+There is a nascent Mocha test suite.
+```
+> npm test
+```
 
-```
-> cd test
-> node test.js
-```
+A number of these tests currently writes output files and test for exact matches
+against a reference file located in `test/files/`.
+
+It's possible that a future feature extension might
+break tests for innocent reasons (e.g. by writing additional XML to the workbook)
+in which case, visually inspect the output file and update the reference file.
 
 ## Release notes
+
+v0.2.0
+* Write numbers as numbers
+* Write fill and font colors using hex ranges (ported from https://github.com/aloteot/msexcel-builder and applied into coffeescript)
+* Apply autofilters
+* Add mocha testing
+
 
 v0.1.0
 * Generate JSZip object, dropping need to generate temporary files on disk.
